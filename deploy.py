@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script para desplegar los contratos de Eureka
+Eureka contracts deployment Script
 """
 import os
 import json
@@ -10,27 +10,25 @@ from web3 import Web3
 from solcx import compile_standard, install_solc, set_solc_version
 from eth_account import Account
 
-# Cargar variables de entorno
 load_dotenv()
 
-# Configuración
 RPC_URL = os.getenv("RPC_URL", "http://127.0.0.1:8545")
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 SOLIDITY_VERSION = "0.8.20"
 
 def compile_contracts():
-    """Compila los contratos Solidity"""
-    print("📦 Compilando contratos...")
+    """Compile Solidity contracts"""
+    print("📦 Compiling contracts...")
     
     install_solc(SOLIDITY_VERSION)
     set_solc_version(SOLIDITY_VERSION)
     
-    # Leer todos los .sol del directorio contracts
+    # Read every sol files
     sources = {}
     for sol_file in Path("contracts").glob("*.sol"):
         sources[f"contracts/{sol_file.name}"] = {"content": sol_file.read_text()}
     
-    # Compilar
+    # Compile
     compiled = compile_standard({
         "language": "Solidity",
         "sources": sources,
@@ -45,22 +43,22 @@ def compile_contracts():
         if errors:
             for error in errors:
                 print(f"❌ {error.get('formattedMessage', error.get('message'))}")
-            raise Exception("Compilación falló")
+            raise Exception("Compilation failed")
     
     # Extraer PatentFactory
     for file_path, file_contracts in compiled["contracts"].items():
         if "Factory.sol" in file_path and "PatentFactory" in file_contracts:
             data = file_contracts["PatentFactory"]
-            print("✅ Compilación exitosa\n")
+            print("✅ Successful compilation\n")
             return {
                 "abi": data["abi"],
                 "bin": data["evm"]["bytecode"]["object"]
             }
     
-    raise Exception("No se encontró PatentFactory")
+    raise Exception("PatentFactory not found")
 
 def deploy_contract(w3, account, contract_interface):
-    """Despliega un contrato"""
+    """Deploys a contract"""
     contract = w3.eth.contract(abi=contract_interface["abi"], bytecode=contract_interface["bin"])
     constructor = contract.constructor()
     
@@ -76,17 +74,17 @@ def deploy_contract(w3, account, contract_interface):
     print(f"  ⏳ Tx: {tx_hash.hex()}")
     
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    print(f"  ✅ Desplegado en: {receipt.contractAddress}")
+    print(f"  ✅ Deployed at: {receipt.contractAddress}")
     
     return receipt.contractAddress, receipt
 
 def main():
-    print("🚀 Despliegue Eureka\n")
+    print("🚀 Eureka Deployment\n")
     
     # Conectar
     w3 = Web3(Web3.HTTPProvider(RPC_URL))
     if not w3.is_connected():
-        print(f"❌ Error: No se pudo conectar a {RPC_URL}")
+        print(f"❌ Error: Couldn't connect to {RPC_URL}")
         return
     
     # Detectar red
@@ -100,7 +98,7 @@ def main():
     
     # Cuenta
     if not PRIVATE_KEY:
-        print("❌ Error: PRIVATE_KEY no encontrada en .env")
+        print("❌ Error: PRIVATE_KEY not found in .env")
         return
     
     private_key = PRIVATE_KEY.strip().lstrip("0x")
@@ -111,12 +109,12 @@ def main():
     print(f"💰 {balance} ETH\n")
     
     if balance == 0:
-        print("⚠️  Sin fondos")
+        print("⚠️  No funds")
         return
     
     # Compilar y desplegar
     factory_interface = compile_contracts()
-    print("📤 Desplegando PatentFactory...")
+    print("📤 Deploying PatentFactory...")
     factory_address, receipt = deploy_contract(w3, account, factory_interface)
     
     # Guardar
@@ -130,8 +128,8 @@ def main():
             "deployer": account.address,
         }, f, indent=2)
     
-    print(f"\n✨ Desplegado: {factory_address}")
-    print(f"📝 Guardado en: deployments/{network}.json")
+    print(f"\n✨ Deployed: {factory_address}")
+    print(f"📝  Saved at: deployments/{network}.json")
 
 if __name__ == "__main__":
     main()

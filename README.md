@@ -1,91 +1,121 @@
 # Eureka
 A platform that facilitates patent creation, use and safekeeping in latin america.
 
-## Despliegue de Contratos
 
-Este proyecto incluye scripts para desplegar los contratos inteligentes usando Python.
 
-### Requisitos
+## Contract Deployment
 
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
+This project includes scripts for deploying the smart contracts using **Python**.
 
-### Instalación
+### Prerequisites
 
-1. Instala las dependencias:
+  * Python 3.8 or higher
+  * pip (Python package manager)
+
+### Installation
+
+1.  Install the required dependencies:
+
+<!-- end list -->
+
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Crea un archivo `.env` en la raíz del proyecto:
+2.  Create a **`.env`** file in the project's root directory:
+
+<!-- end list -->
+
 ```env
 RPC_URL=http://127.0.0.1:8545
-PRIVATE_KEY=tu_clave_privada_sin_0x
+PRIVATE_KEY=your_private_key_without_0x
 ```
 
-### Despliegue
+### Deployment
 
-#### Opción 1: Red Local
+#### Option 1: Local Network
 
-1. Inicia una red local (Ganache, Hardhat node, o cualquier nodo local):
+1.  Start a local development network (Ganache, Hardhat node, or any local node):
+
+<!-- end list -->
+
 ```bash
-# Ejemplo con Ganache CLI
+# Example with Ganache CLI
 ganache-cli
 
-# O con Hardhat
+# Or with Hardhat
 npx hardhat node
 ```
 
-2. En otro terminal, ejecuta el script de despliegue:
+2.  In a separate terminal, execute the deployment script:
+
+<!-- end list -->
+
 ```bash
 python deploy.py
 ```
 
-#### Opción 2: Sepolia Testnet
+#### Option 2: Sepolia Testnet
 
-1. Configura tu `.env` con:
+1.  Configure your **`.env`** file with:
+
+<!-- end list -->
+
 ```env
-RPC_URL=https://sepolia.infura.io/v3/TU_PROJECT_ID
-PRIVATE_KEY=tu_clave_privada
+RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
+PRIVATE_KEY=your_private_key
 ```
 
-2. Asegúrate de tener ETH de prueba en Sepolia en tu cuenta.
+2.  Ensure your account has test ETH on Sepolia.
 
-3. Ejecuta:
+3.  Execute:
+
+<!-- end list -->
+
 ```bash
 python deploy.py
 ```
 
-#### Opción 3: Mainnet
+#### Option 3: Mainnet
 
-⚠️ **ADVERTENCIA**: Solo despliega en mainnet si estás completamente seguro.
+**WARNING**: Only deploy to Mainnet if you are completely sure and ready.
 
-1. Configura tu `.env` con la RPC de mainnet
-2. Verifica que tienes suficiente ETH para el gas
-3. Ejecuta:
+1.  Configure your **`.env`** file with the Mainnet RPC URL.
+2.  Verify that you have sufficient ETH for gas fees.
+3.  Execute:
+
+<!-- end list -->
+
 ```bash
 python deploy.py
 ```
 
-### Estructura de Contratos
+-----
 
-- **PatentFactory**: Contrato factory que crea instancias de Patent
-- **Patent**: Contrato individual que representa una patente con:
-  - Propietario
-  - Link al PDF de la patente
-  - Hash SHA256 del PDF
-  - Funciones de depósito y retiro de fondos
+## Contract Structure
 
-### Información de Despliegue
+  * **PatentFactory**: A **factory contract** that creates new instances of the **Patent** contract.
+  * **Patent**: An **individual contract** representing a patent, featuring:
+      * Owner address
+      * Link to the patent PDF file (e.g., IPFS URI)
+      * SHA256 hash of the PDF file (for integrity verification)
+      * Functions for depositing and withdrawing funds
 
-Después de cada despliegue, la información se guarda en `deployments/[red].json` con:
-- Dirección del contrato desplegado
-- Hash de la transacción
-- Red y Chain ID
-- Cuenta que desplegó
+-----
 
-### Notas de Seguridad
+## Deployment Information
 
-- ⚠️ **NUNCA** compartas tu archivo `.env` o tu clave privada
-- Usa cuentas de prueba para desarrollo
-- Verifica siempre las direcciones de los contratos antes de interactuar con ellos
+After each deployment, the resulting information is saved in `deployments/[network].json`, including:
+
+  * Deployed contract address
+  * Transaction hash
+  * Network and Chain ID
+  * Deployer account
+
+-----
+
+## Security Notes
+
+  * **NEVER** share your **`.env`** file or your private key.
+  * Use dedicated **test accounts** for development.
+  * Always **verify contract addresses** before interacting with them.
