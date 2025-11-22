@@ -34,21 +34,41 @@ export default function PatentsPage() {
   const [patents, setPatents] = useState<any[]>([]);
 
   useEffect(() => {
+    // Simulación de fetch
     setTimeout(() => setPatents(MOCK_PATENTS), 300);
   }, []);
 
   return (
-    <div className="min-h-screen px-6 py-10">
-      <h1 className="text-3xl font-bold mb-4">Available Patents</h1>
-      <p className="text-gray-500 dark:text-gray-400 mb-10">
-        Support cutting-edge research through donations or early-stage
-        micro-investments.
-      </p>
+    <div className="min-h-screen w-full flex flex-col items-center justify-start py-12 px-6">
+      <div className="max-w-5xl w-full">
+        <h1 className="text-4xl font-bold mb-4 tracking-tight text-center">
+          Available Patents
+        </h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {patents.map((p) => (
-          <PatentCard key={p.id} {...p} />
-        ))}
+        <p className="text-gray-600 dark:text-gray-300 text-center mb-10 max-w-2xl mx-auto">
+          Support cutting-edge research through donations or early-stage
+          micro-investments.
+        </p>
+
+        {/* GRID */}
+        <div
+          className="
+            grid 
+            grid-cols-1 
+            sm:grid-cols-2 
+            lg:grid-cols-3 
+            gap-8 
+            animate-fadeIn
+          "
+        >
+          {patents.map((p) => (
+            <PatentCard key={p.id} {...p} />
+          ))}
+        </div>
+
+        {patents.length === 0 && (
+          <p className="text-gray-500 text-center mt-10">Loading patents...</p>
+        )}
       </div>
     </div>
   );

@@ -1,10 +1,13 @@
 "use client";
 
-import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
 import Link from "next/link";
+import LoginWithEmail from "@/components/privy/LoginWithEmail";
+import { Button } from "@/components/ui/Button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+
 
 export default function HomePage() {
+    
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-background text-foreground">
       {/* Hero Section */}
@@ -31,45 +34,45 @@ export default function HomePage() {
 
           <Button
             as={Link}
-            href="/register"
+            href="/login"
             size="lg"
-            variant="bordered"
+            variant="solid"
           >
-            Researcher Login
+            Login as Researcher
           </Button>
+
         </div>
       </div>
 
       {/* Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mt-20 w-full">
-        <Card shadow="sm">
-          <CardBody className="space-y-2">
-            <h2 className="text-xl font-semibold">Decentralized Identity</h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Researchers authenticate using Account Abstraction for secure
-              and modern Web3 onboarding.
-            </p>
-          </CardBody>
+        <Card>
+          <CardHeader>
+            <CardTitle>Decentralized Identity</CardTitle>
+            <CardDescription>
+              Researchers authenticate using Account Abstraction for secure onboarding.
+            </CardDescription>
+          </CardHeader>
         </Card>
 
-        <Card shadow="sm">
-          <CardBody className="space-y-2">
-            <h2 className="text-xl font-semibold">Transparent Donations</h2>
-            <p className="text-gray-500 dark:text-gray-400">
+
+        <Card>
+          <CardHeader>
+            <CardTitle >Transparent Donations</CardTitle>
+            <CardDescription >
               All transactions remain traceable, enabling anyone to support
               science with confidence.
-            </p>
-          </CardBody>
+            </CardDescription>
+          </CardHeader>
         </Card>
-
-        <Card shadow="sm">
-          <CardBody className="space-y-2">
-            <h2 className="text-xl font-semibold">Micro-Investments</h2>
-            <p className="text-gray-500 dark:text-gray400">
+        <Card>
+          <CardHeader>
+            <CardTitle >Micro-Investments</CardTitle>
+            <CardDescription >
               Power-users can invest in early-stage patents and track their
               involvement through a dedicated dashboard.
-            </p>
-          </CardBody>
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     </div>
