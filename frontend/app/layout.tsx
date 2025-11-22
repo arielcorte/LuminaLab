@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import '@coinbase/onchainkit/styles.css';
-import { OnchainKitProvider } from "@coinbase/onchainkit"
-import { base } from "viem/chains";
+import Providers from "./provider";
 
 
 const geistSans = Geist({
@@ -31,26 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <OnchainKitProvider
-        apiKey={process.env.ONCHAINKIT_API_KEY}
-        chain={base}
-        config={{
-          appearance: {
-            name: 'Your App Name',        // Displayed in modal header
-            logo: 'https://your-logo.com',// Displayed in modal header
-            mode: 'auto',                 // 'light' | 'dark' | 'auto'
-            theme: 'default',             // 'default' or custom theme
-          },
-          // configure the wallet modal below
-          wallet: {
-            display: 'modal',
-            termsUrl: 'https://...',
-            privacyUrl: 'https://...',
-          },
-        }}
-        >
+        <Providers>
         {children}
-        </OnchainKitProvider>
+        </Providers>
       </body>
     </html>
   );
