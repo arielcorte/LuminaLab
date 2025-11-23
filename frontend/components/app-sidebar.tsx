@@ -14,7 +14,7 @@ import { HomeIcon, Scroll } from "lucide-react";
 
 const items = [
   { url: "/dashboard", title: "Home", icon: HomeIcon },
-  { url: "/patents", title: "Patents", icon: Scroll },
+  { url: "/dashboard/patents", title: "Patents", icon: Scroll },
 ];
 
 export function AppSidebar() {
