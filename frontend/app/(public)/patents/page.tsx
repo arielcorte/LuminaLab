@@ -1,70 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 import { OpenCreatePatentInline } from "@/components/patents/OpenCreatePatentInline";
 import { PatentCard } from "@/components/patents/PatentCard";
-import { usePrivy } from "@privy-io/react-auth";
-import { useState, useEffect } from "react";
-
-const MOCK_PATENTS = [
-  {
-    id: "1",
-    title: "Quantum-Resilient Encryption Layer",
-    researcher: "Dr. Sofia Martínez",
-    description:
-      "A lightweight cryptographic layer designed for post-quantum resistance in IoT devices.",
-    tags: ["Cryptography", "IoT", "Quantum"],
-  },
-  {
-    id: "2",
-    title: "Bio-Reactive Nanocoating for Implants",
-    researcher: "Dr. Alex Kim",
-    description:
-      "A self-healing nanocoating that reduces inflammation around metallic implants.",
-    tags: ["Biotech", "Nanotech"],
-  },
-  {
-    id: "3",
-    title: "AI-Driven Ocean Plastic Collector",
-    researcher: "Ing. Carla Ruiz",
-    description:
-      "Autonomous surface robots that identify, cluster, and collect microplastics.",
-    tags: ["AI", "Robotics", "Environment"],
-  },
-  {
-    id: "4",
-    title: "Quantum-Resilient Encryption Layer",
-    researcher: "Dr. Sofia Martínez",
-    description:
-      "A lightweight cryptographic layer designed for post-quantum resistance in IoT devices.",
-    tags: ["Cryptography", "IoT", "Quantum"],
-  },
-  {
-    id: "5",
-    title: "Bio-Reactive Nanocoating for Implants",
-    researcher: "Dr. Alex Kim",
-    description:
-      "A self-healing nanocoating that reduces inflammation around metallic implants.",
-    tags: ["Biotech", "Nanotech"],
-  },
-  {
-    id: "6",
-    title: "AI-Driven Ocean Plastic Collector",
-    researcher: "Ing. Carla Ruiz",
-    description:
-      "Autonomous surface robots that identify, cluster, and collect microplastics.",
-    tags: ["AI", "Robotics", "Environment"],
-  },
-];
+import { useLighthousePatents } from "@/hooks/useLighthousePatents";
 
 export default function PatentsPage() {
-  const [patents, setPatents] = useState<any[]>([]);
-  const { ready, authenticated} = usePrivy();
-
-
-  useEffect(() => {
-    // Simulación de fetch
-    setTimeout(() => setPatents(MOCK_PATENTS), 300);
-  }, []);
+  const [refreshKey, setRefreshKey] = useState<string>();
+  const { authenticated } = usePrivy();
+  const { patents, loading, error } = useLighthousePatents(refreshKey);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-start py-12 px-6">
@@ -79,28 +24,35 @@ export default function PatentsPage() {
         </p>
         {authenticated && (
         <div className="m-4">
-          <OpenCreatePatentInline />
+          <OpenCreatePatentInline
+            onCreated={(cid) => {
+              setRefreshKey(cid);
+            }}
+          />
         </div>
         )}
 
+        {error && (
+          <p className="text-red-500 text-center mb-6">
+            {error}
+          </p>
+        )}
+
         {/* GRID */}
-        <div
-          className="
-            grid 
-            grid-cols-1 
-            sm:grid-cols-2 
-            lg:grid-cols-3 
-            gap-8 
-            animate-fadeIn
-          "
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-fadeIn">
           {patents.map((p) => (
             <PatentCard key={p.id} {...p} />
           ))}
         </div>
 
-        {patents.length === 0 && (
+        {loading && (
           <p className="text-gray-500 text-center mt-10">Loading patents...</p>
+        )}
+
+        {!loading && patents.length === 0 && (
+          <p className="text-gray-500 text-center mt-10">
+            No patents found. Be the first to upload one!
+          </p>
         )}
       </div>
     </div>

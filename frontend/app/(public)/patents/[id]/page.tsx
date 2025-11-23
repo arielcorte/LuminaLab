@@ -1,60 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PDFViewer } from "@/components/patents/PDFViewer";
 import { usePrivy } from "@privy-io/react-auth";
+import { buildPdfUrl, fetchPatentMetadata } from "@/lib/lighthouse";
 
-type Patent = {
-  id: string;
+type PatentDetails = {
   title: string;
   researcher: string;
   description: string;
-  address: string;
   tags: string[];
+  ownerAddress?: string;
+  pdfCid: string;
+  pdfUrl: string;
 };
-
-const MOCK_PATENTS: Patent[] = [
-  {
-    id: "1",
-    title: "Quantum-Resilient Encryption Layer",
-    researcher: "Dr. Sofia Martínez",
-    description:
-      "A lightweight cryptographic layer designed for post-quantum resistance in IoT devices.",
-    address: "0x0918ab0f0bebd01bc0280c9922b01",
-    tags: ["Cryptography", "IoT", "Quantum"],
-  },
-  {
-    id: "2",
-    title: "Bio-Reactive Nanocoating for Implants",
-    researcher: "Dr. Alex Kim",
-    description:
-      "A self-healing nanocoating that reduces inflammation around metallic implants.",
-    address: "0x0918ab0f0bebd01bc0280c9922b01",
-      
-    tags: ["Biotech", "Nanotech"],
-  },
-  {
-    id: "3",
-    title: "AI-Driven Ocean Plastic Collector",
-    researcher: "Ing. Carla Ruiz",
-    description:
-      "Autonomous surface robots that identify, cluster, and collect microplastics.",
-    address: "0x0918ab0f0bebd01bc0280c9922b01",
-    tags: ["AI", "Robotics", "Environment"],
-  },
-];
 
 export default function PatentPage() {
   const params = useParams();
-  const { id } = params;
-  const [patent, setPatent] = useState<Patent | null>(null);
-  const { authenticated } = usePrivy();
+  const paramId = params?.id;
+  const patentId = useMemo(
+    () => (Array.isArray(paramId) ? paramId[0] : paramId),
+    [paramId]
+  );
 
+  const [patent, setPatent] = useState<PatentDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { authenticated } = usePrivy();
   const router = useRouter();
   const [count, setCount] = useState(5);
 
@@ -74,6 +57,44 @@ export default function PatentPage() {
     }
   }, [authenticated, router]);
 
+  useEffect(() => {
+    if (!authenticated || !patentId) return;
+
+    async function loadPatent() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const metadata = await fetchPatentMetadata(patentId);
+        if (!metadata?.pdfCid) {
+          throw new Error("Patent metadata is missing the PDF reference.");
+        }
+
+        setPatent({
+          title: metadata.title,
+          description: metadata.description,
+          tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+          researcher: metadata.ownerAddress ?? "Unknown researcher",
+          ownerAddress: metadata.ownerAddress,
+          pdfCid: metadata.pdfCid,
+          pdfUrl: buildPdfUrl(metadata.pdfCid),
+        });
+      } catch (err) {
+        console.error(err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load patent details."
+        );
+        setPatent(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPatent();
+  }, [authenticated, patentId]);
+
   if (!authenticated) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
@@ -83,16 +104,22 @@ export default function PatentPage() {
     );
   }
 
-
-  useEffect(() => {
-    const found = MOCK_PATENTS.find((p) => p.id === id);
-    setPatent(found || null);
-  }, [id]);
-
-  if (!patent) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Patent not found</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          Loading patent details...
+        </p>
+      </div>
+    );
+  }
+
+  if (error || !patent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500 dark:text-red-400">
+          {error ?? "Patent not found"}
+        </p>
       </div>
     );
   }
@@ -111,24 +138,20 @@ export default function PatentPage() {
 
           <div className="flex flex-wrap gap-2">
             {patent.tags.map((tag) => (
-                <Badge
-                key={tag}
-                >
-                {tag}
-              </Badge>
+              <Badge key={tag}>{tag}</Badge>
             ))}
           </div>
 
-          <PDFViewer pdfUrl="http://sampleURL.com/pdf_placeholder" />
+          <PDFViewer pdfUrl={patent.pdfUrl} />
 
-          <div className="mt-6 flex gap-4">
-          <p className="text-gray-700 dark:text-gray-200 ">Address: {patent.address}</p>
-            <Button>
-              Donate
-            </Button>
-            <Button>
-              Invest
-            </Button>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            {patent.ownerAddress && (
+              <p className="text-gray-700 dark:text-gray-200">
+                Owner address: {patent.ownerAddress}
+              </p>
+            )}
+            <Button>Donate</Button>
+            <Button>Invest</Button>
           </div>
         </CardContent>
       </Card>

@@ -1,35 +1,85 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { usePrivy } from "@privy-io/react-auth";
+import { uploadPatent } from "@/lib/lighthouse";
 
-export default function CreatePatentForm() {
+type CreatePatentFormProps = {
+  onCreated?: (metadataCid: string) => void;
+};
+
+export default function CreatePatentForm({ onCreated }: CreatePatentFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successCid, setSuccessCid] = useState<string | null>(null);
 
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { user } = usePrivy();
+  const fallbackWallet = user?.linkedAccounts?.find(
+    (account) => account.type === "wallet"
+  ) as { address?: string } | undefined;
+
+  const ownerAddress = user?.wallet?.address ?? fallbackWallet?.address;
+
+  const handlePdfChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setPdfFile(e.target.files[0]);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log({
-      title,
-      description,
-      tags: tags.split(",").map((t) => t.trim()),
-      pdfFile,
-      isPublic,
-      address: "TODO: placeholder",
-    });
+    if (!pdfFile) {
+      setError("Please attach a PDF before submitting.");
+      return;
+    }
+
+    const tagList = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccessCid(null);
+
+      const result = await uploadPatent({
+        pdfFile,
+        title,
+        description,
+        tags: tagList,
+        isPublic,
+        ownerAddress,
+      });
+
+      setSuccessCid(result.metadataCid);
+      onCreated?.(result.metadataCid);
+
+      setTitle("");
+      setDescription("");
+      setTags("");
+      setPdfFile(null);
+      setIsPublic(true);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not upload patent to Lighthouse."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -53,6 +103,7 @@ export default function CreatePatentForm() {
                 accept="application/pdf"
                 className="mt-4"
                 onChange={handlePdfChange}
+                disabled={submitting}
               />
               {pdfFile && <p className="text-sm mt-2">{pdfFile.name}</p>}
             </div>
@@ -66,6 +117,7 @@ export default function CreatePatentForm() {
                   placeholder="Enter patent title"
                   value={title}
                   onChange={(e) => setTitle(e.currentTarget.value)}
+                  disabled={submitting}
                 />
               </div>
 
@@ -76,6 +128,7 @@ export default function CreatePatentForm() {
                   placeholder="Describe your invention"
                   value={description}
                   onChange={(e) => setDescription(e.currentTarget.value)}
+                  disabled={submitting}
                 />
               </div>
 
@@ -86,6 +139,7 @@ export default function CreatePatentForm() {
                   placeholder="e.g. AI, Robotics, Environment"
                   value={tags}
                   onChange={(e) => setTags(e.currentTarget.value)}
+                  disabled={submitting}
                 />
               </div>
 
@@ -96,14 +150,27 @@ export default function CreatePatentForm() {
                   checked={isPublic}
                   onChange={() => setIsPublic(!isPublic)}
                   className="h-4 w-4"
+                  disabled={submitting}
                 />
                 <Label htmlFor="isPublic" className="mb-0">
                   Public Patent
                 </Label>
               </div>
 
-              <Button type="submit" className="mt-4">
-                Create Patent
+              {error && (
+                <p className="text-sm text-red-500" role="alert">
+                  {error}
+                </p>
+              )}
+
+              {successCid && (
+                <p className="text-sm text-green-600">
+                  Patent saved to Lighthouse. Metadata CID: {successCid}
+                </p>
+              )}
+
+              <Button type="submit" className="mt-4" disabled={submitting}>
+                {submitting ? "Uploading..." : "Create Patent"}
               </Button>
             </div>
           </form>
