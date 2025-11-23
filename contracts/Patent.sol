@@ -3,10 +3,10 @@ pragma solidity ^0.8.20;
 
 contract Patent {
     address public owner;
-
     string public patentLink;            // link al PDF
     string public royaltiesSessionLink;  // link a sesión de regalías
     bytes32 public patentHash;
+    string public royaltiesSessionHash;  // hash de la sesión de regalías
 
     // Donante → total donado
     mapping(address => uint256) public donations;
@@ -22,12 +22,14 @@ contract Patent {
         address _owner,
         string memory _patentLink,
         bytes32 _patentHash,
-        string memory _royaltiesSessionLink
+        string memory _royaltiesSessionLink,
+        string memory _royaltiesSessionHash
     ) {
         owner = _owner;
         patentLink = _patentLink;
         patentHash = _patentHash;
         royaltiesSessionLink = _royaltiesSessionLink;
+        royaltiesSessionHash = _royaltiesSessionHash;
     }
 
     modifier onlyOwner() {
@@ -40,7 +42,7 @@ contract Patent {
         require(msg.value > 0, "No zero value");
 
         // Enviar directamente al owner
-        (bool sent, ) = payable(owner).call{value: msg.value}();
+        (bool sent, ) = payable(owner).call{value: msg.value}("");
         require(sent, "Transfer failed");
 
         // Registrar la donación
