@@ -1,7 +1,7 @@
 
 # Eureka: Decentralized Patent Funding Platform
-
-> Fund breakthrough innovations through transparent blockchain-based donations and micro-investments
+>  Solution for poor science funding in Argentina.
+> Fund breakthrough innovations through transparent blockchain-based donations and micro-investments.
 
 ## 🚀 Quick Start
 
@@ -28,6 +28,7 @@ Eureka is a decentralized platform that connects researchers with supporters thr
 ### Key Features
 
 🔐 **Blockchain-Verified Patents**
+- Solution for poor science funding in Argentina.
 - Factory pattern for scalable patent creation
 - IPFS/Filecoin document storage
 - SHA256 hash verification for document integrity
