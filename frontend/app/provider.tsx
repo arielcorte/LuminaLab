@@ -2,7 +2,7 @@
 
 import { config } from "@/lib/wagmi";
 import { PrivyProvider } from "@privy-io/react-auth";
-import { WagmiConfig } from "wagmi";
+import { WagmiProvider } from "wagmi";
 
 export default function Providers({
   children,
@@ -22,9 +22,9 @@ export default function Providers({
         }
       }}
     >
-      <WagmiConfig config={config}>
-      {children}
-      </WagmiConfig>
+      <WagmiProvider config={config}>
+        {children}
+      </WagmiProvider>
     </PrivyProvider>
   )
 }

@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -81,13 +87,16 @@ export default function InvestmentsPage() {
   const [donations] = useState(MOCK_DONATIONS);
 
   const totalInvested = investments.reduce((sum, inv) => sum + inv.amount, 0);
-  const currentValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+  const currentValue = investments.reduce(
+    (sum, inv) => sum + inv.currentValue,
+    0,
+  );
   const totalReturns = currentValue - totalInvested;
   const returnPercentage = ((totalReturns / totalInvested) * 100).toFixed(1);
   const totalDonated = donations.reduce((sum, don) => sum + don.amount, 0);
 
   return (
-    <div className="p-6 space-y-6 w-full max-w-7xl mx-auto">
+    <div className="p-6 mx-auto space-y-6 w-full max-w-7xl">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Your Investments</h1>
         <p className="text-muted-foreground">
@@ -97,11 +106,15 @@ export default function InvestmentsPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Invested</CardTitle>
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">
+              Total Invested
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalInvested.toFixed(2)} ETH</div>
+            <div className="text-2xl font-bold">
+              {totalInvested.toFixed(2)} ETH
+            </div>
             <p className="text-xs text-muted-foreground">
               Across {investments.length} patents
             </p>
@@ -109,11 +122,13 @@ export default function InvestmentsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Current Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentValue.toFixed(2)} ETH</div>
+            <div className="text-2xl font-bold">
+              {currentValue.toFixed(2)} ETH
+            </div>
             <p className="text-xs text-green-600">
               +{returnPercentage}% return
             </p>
@@ -121,7 +136,7 @@ export default function InvestmentsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Total Returns</CardTitle>
           </CardHeader>
           <CardContent>
@@ -133,11 +148,13 @@ export default function InvestmentsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row justify-between items-center pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Total Donated</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalDonated.toFixed(2)} ETH</div>
+            <div className="text-2xl font-bold">
+              {totalDonated.toFixed(2)} ETH
+            </div>
             <p className="text-xs text-muted-foreground">
               {donations.length} donations made
             </p>
@@ -164,10 +181,10 @@ export default function InvestmentsPage() {
                 {investments.map((investment) => (
                   <div
                     key={investment.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="flex justify-between items-center p-4 rounded-lg border transition-colors hover:bg-accent/50"
                   >
                     <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex gap-2 items-center">
                         <Link
                           href={`/patents/${investment.patentId}`}
                           className="font-medium hover:underline"
@@ -179,8 +196,8 @@ export default function InvestmentsPage() {
                             investment.status === "active"
                               ? "default"
                               : investment.status === "pending"
-                              ? "secondary"
-                              : "outline"
+                                ? "secondary"
+                                : "outline"
                           }
                         >
                           {investment.status}
@@ -190,10 +207,11 @@ export default function InvestmentsPage() {
                         By {investment.researcher}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Invested on {new Date(investment.date).toLocaleDateString()}
+                        Invested on{" "}
+                        {new Date(investment.date).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right space-y-1">
+                    <div className="space-y-1 text-right">
                       <div className="font-semibold">
                         {investment.currentValue.toFixed(2)} ETH
                       </div>
@@ -216,8 +234,8 @@ export default function InvestmentsPage() {
               </div>
 
               {investments.length === 0 && (
-                <div className="text-center py-10">
-                  <p className="text-muted-foreground mb-4">
+                <div className="py-10 text-center">
+                  <p className="mb-4 text-muted-foreground">
                     You haven't made any investments yet
                   </p>
                   <Button asChild>
@@ -242,24 +260,27 @@ export default function InvestmentsPage() {
                 {donations.map((donation) => (
                   <div
                     key={donation.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
+                    className="flex justify-between items-center p-4 rounded-lg border"
                   >
                     <div className="flex-1 space-y-1">
                       <p className="font-medium">{donation.patentTitle}</p>
                       <p className="text-xs text-muted-foreground">
-                        Donated on {new Date(donation.date).toLocaleDateString()}
+                        Donated on{" "}
+                        {new Date(donation.date).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">{donation.amount.toFixed(2)} ETH</div>
+                      <div className="font-semibold">
+                        {donation.amount.toFixed(2)} ETH
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {donations.length === 0 && (
-                <div className="text-center py-10">
-                  <p className="text-muted-foreground mb-4">
+                <div className="py-10 text-center">
+                  <p className="mb-4 text-muted-foreground">
                     You haven't made any donations yet
                   </p>
                   <Button asChild>

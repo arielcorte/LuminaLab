@@ -4,67 +4,31 @@ import { OpenCreatePatentInline } from "@/components/patents/OpenCreatePatentInl
 import { PatentCard } from "@/components/patents/PatentCard";
 import { usePrivy } from "@privy-io/react-auth";
 import { useState, useEffect } from "react";
-
-const MOCK_PATENTS = [
-  {
-    id: "1",
-    title: "Quantum-Resilient Encryption Layer",
-    researcher: "Dr. Sofia Martínez",
-    description:
-      "A lightweight cryptographic layer designed for post-quantum resistance in IoT devices.",
-    tags: ["Cryptography", "IoT", "Quantum"],
-  },
-  {
-    id: "2",
-    title: "Bio-Reactive Nanocoating for Implants",
-    researcher: "Dr. Alex Kim",
-    description:
-      "A self-healing nanocoating that reduces inflammation around metallic implants.",
-    tags: ["Biotech", "Nanotech"],
-  },
-  {
-    id: "3",
-    title: "AI-Driven Ocean Plastic Collector",
-    researcher: "Ing. Carla Ruiz",
-    description:
-      "Autonomous surface robots that identify, cluster, and collect microplastics.",
-    tags: ["AI", "Robotics", "Environment"],
-  },
-  {
-    id: "4",
-    title: "Quantum-Resilient Encryption Layer",
-    researcher: "Dr. Sofia Martínez",
-    description:
-      "A lightweight cryptographic layer designed for post-quantum resistance in IoT devices.",
-    tags: ["Cryptography", "IoT", "Quantum"],
-  },
-  {
-    id: "5",
-    title: "Bio-Reactive Nanocoating for Implants",
-    researcher: "Dr. Alex Kim",
-    description:
-      "A self-healing nanocoating that reduces inflammation around metallic implants.",
-    tags: ["Biotech", "Nanotech"],
-  },
-  {
-    id: "6",
-    title: "AI-Driven Ocean Plastic Collector",
-    researcher: "Ing. Carla Ruiz",
-    description:
-      "Autonomous surface robots that identify, cluster, and collect microplastics.",
-    tags: ["AI", "Robotics", "Environment"],
-  },
-];
+import { useAllPatents } from "@/hooks/useAllPatents";
+import { CONTRACT_ADDRESSES } from "@/lib/contracts";
 
 export default function PatentsPage() {
   const [patents, setPatents] = useState<any[]>([]);
-  const { ready, authenticated} = usePrivy();
+  const { ready, authenticated } = usePrivy();
 
+  // Fetch patents from blockchain
+  const { patents: patentAddresses, loading } = useAllPatents(CONTRACT_ADDRESSES.FACTORY);
 
   useEffect(() => {
-    // Simulación de fetch
-    setTimeout(() => setPatents(MOCK_PATENTS), 300);
-  }, []);
+    // Convert patent addresses to display format
+    if (patentAddresses && patentAddresses.length > 0) {
+      const formattedPatents = patentAddresses.map((address: string, index: number) => ({
+        id: address,
+        address,
+        // These will be fetched from the individual patent contracts in PatentCard
+        title: `Patent ${index + 1}`,
+        researcher: "Loading...",
+        description: "Loading patent details...",
+        tags: [],
+      }));
+      setPatents(formattedPatents);
+    }
+  }, [patentAddresses]);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-start py-12 px-6">
@@ -99,8 +63,12 @@ export default function PatentsPage() {
           ))}
         </div>
 
-        {patents.length === 0 && (
-          <p className="text-gray-500 text-center mt-10">Loading patents...</p>
+        {loading && (
+          <p className="text-gray-500 text-center mt-10">Loading patents from blockchain...</p>
+        )}
+
+        {!loading && patents.length === 0 && (
+          <p className="text-gray-500 text-center mt-10">No patents found. Create the first one!</p>
         )}
       </div>
     </div>

@@ -1,59 +1,203 @@
 
-# Eureka: Decentralized Patents for Argentina
+# Eureka: Decentralized Patent Funding Platform
 
-> ETHGlobal Hackathon Submission
+> Fund breakthrough innovations through transparent blockchain-based donations and micro-investments
 
-## Demo
-[Live Demo](https://your-demo-url)
-<!-- ![Screenshot](./screenshot.png) -->
+## 🚀 Quick Start
 
-## What is Eureka?
-Eureka lets researchers create, fund, and manage patents on-chain, with decentralized storage and transparent donations.
-
-## Quick Start
+**New here?** Check out [QUICK_START.md](./QUICK_START.md) for a 5-minute setup guide!
 
 ```sh
-# 1. Install dependencies
+# 1. Deploy contracts
 pip install -r requirements.txt
-
-# 2. Deploy contracts to Sepolia
 python deploy.py
 
-# 3. Run frontend
+# 2. Run frontend
 cd frontend
 npm install
+echo "NEXT_PUBLIC_FACTORY_ADDRESS=your_factory_address" > .env.local
 npm run dev
 ```
 
-## Features
-- Patent creation and management
-- Filecoin/IPFS storage for documents
-- Transparent donations to researchers
-- Factory contract for scalable deployments
+Visit http://localhost:3000
 
-## How it works
-- Users upload patent PDFs to Filecoin/IPFS
-- CIDs and hashes are stored on-chain
-- Donors send ETH directly to patent owners
+## ✨ What is Eureka?
 
-## Contract Addresses
-- PatentFactory (Sepolia): `0x...`
-- Patent (example): `0x...`
+Eureka is a decentralized platform that connects researchers with supporters through blockchain technology. Researchers can register patents on-chain with verifiable document hashes, while supporters can directly fund promising innovations through transparent donations.
 
-## How to Interact
-- Use ABIs in `frontend/PatentABI.js` and `frontend/FactoryABI.js`
-- Example: Create a patent via frontend or script
+### Key Features
+
+🔐 **Blockchain-Verified Patents**
+- Factory pattern for scalable patent creation
+- IPFS/Filecoin document storage
+- SHA256 hash verification for document integrity
+- Immutable ownership records
+
+💸 **Direct Donations**
+- Funds go directly to patent owners (no intermediaries)
+- Transparent on-chain donation tracking
+- Support for multiple donors per patent
+- Real-time donation statistics
+
+🎨 **Professional UX**
+- Real-time transaction status tracking
+- Toast notifications for all actions
+- Form validation with inline errors
+- Mobile-responsive design
+- One-click address copying
+- Direct blockchain explorer links
+
+🔗 **Web3 Integration**
+- Privy wallet connection
+- Wagmi for blockchain interactions
+- Base Sepolia testnet support
+- MetaMask compatibility
+
+## 📱 User Features
+
+### For Researchers
+
+1. **Create Patents**
+   - Upload documents to IPFS/Filecoin
+   - Register patent on-chain with document hash
+   - Include royalties session information
+   - Get unique contract address for your patent
+
+2. **Manage Patents**
+   - Receive donations directly to wallet
+   - Update royalties session links
+   - Transfer patent ownership
+   - Track unique donor count
+
+### For Supporters
+
+1. **Discover Patents**
+   - Browse all registered patents
+   - View patent details and documents
+   - See donation statistics
+   - Verify document integrity
+
+2. **Support Innovation**
+   - Donate any amount in ETH
+   - Quick-select common amounts
+   - Real-time transaction tracking
+   - Donation history on-chain
+
+## 🏗️ Architecture
+
+### Smart Contracts (Base Sepolia)
+
+**PatentFactory.sol**
+- Creates new Patent contract instances
+- Maintains registry of all patents
+- Emits creation events
+
+**Patent.sol**
+- Stores patent metadata
+- Handles donations (forwards to owner)
+- Tracks donors and amounts
+- Manages ownership
+
+### Frontend (Next.js 14 + TypeScript)
+
+- **Pages**: Next.js App Router
+- **Styling**: TailwindCSS
+- **Blockchain**: Wagmi v2 + Viem
+- **Wallet**: Privy
+- **Notifications**: Sonner (toast)
+- **UI Components**: shadcn/ui
+
+## 📖 Documentation
+
+- **[QUICK_START.md](./QUICK_START.md)** - Get started in 5 minutes
+- **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** - Complete technical integration guide
+- **[UX_IMPROVEMENTS.md](./UX_IMPROVEMENTS.md)** - Detailed UX features documentation
+- **[README_deploy_contract.md](./README_deploy_contract.md)** - Advanced deployment options
+
+## 🎯 Use Cases
+
+### Academic Research
+Universities and researchers can register breakthrough discoveries and receive community funding for further development.
+
+### Open Innovation
+Independent inventors can share patents publicly while maintaining ownership and receiving support from the community.
+
+### Transparency
+All donations are recorded on-chain, providing complete transparency to donors about where their funds go.
+
+## 🛠️ Tech Stack
+
+**Smart Contracts**
+- Solidity ^0.8.20
+- Factory pattern
+- Direct payment forwarding
+
+**Frontend**
+- Next.js 14 (App Router)
+- TypeScript
+- TailwindCSS
+- Wagmi v2
+- Viem
+- Privy
+- Sonner
+
+**Blockchain**
+- Base Sepolia (testnet)
+- Base Mainnet (production ready)
+
+## 📦 Project Structure
+
+```
+eureka/
+├── contracts/           # Solidity smart contracts
+├── frontend/
+│   ├── app/            # Next.js pages
+│   ├── components/     # React components
+│   │   ├── blockchain/ # Blockchain UI components
+│   │   └── patents/    # Patent-specific components
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utilities and config
+│   └── abi/            # Contract ABIs
+├── deploy.py           # Python deployment script
+└── docs/               # Documentation
+```
+
+## 🌐 Network Information
+
+**Base Sepolia (Testnet)**
+- Chain ID: 84532
+- RPC: https://sepolia.base.org
+- Explorer: https://sepolia.basescan.org
+- Faucet: https://www.coinbase.com/faucets/base-ethereum-goerli-faucet
+
+**Base Mainnet (Production)**
+- Chain ID: 8453
+- RPC: https://mainnet.base.org
+- Explorer: https://basescan.org
+
+## 🎬 Demo
+
+### Create a Patent
+1. Connect wallet with Privy
+2. Fill in patent details (IPFS link, hash, royalties info)
+3. Submit transaction
+4. Receive unique patent contract address
+
+### Donate to a Patent
+1. Browse patents list
+2. Select a patent to view details
+3. Enter donation amount or use quick buttons
+4. Confirm transaction in wallet
+5. See success notification
 
 ## Team
-- Franco Cerino, Ariel Corte, [others]
-- Contact: [email/discord]
+
+- Franco Cerino
+- Ariel Corte
 
 ## License
+
 MIT
-
-
-
-ganache-cli
 
 ## Contract Deployment
 
