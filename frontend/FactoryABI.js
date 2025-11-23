@@ -18,7 +18,8 @@ export const FactoryABI = [
     "inputs": [
       { "internalType": "string", "name": "patentLink", "type": "string" },
       { "internalType": "bytes32", "name": "patentHash", "type": "bytes32" },
-      { "internalType": "string", "name": "royaltiesSessionLink", "type": "string" }
+      { "internalType": "string", "name": "royaltiesSessionLink", "type": "string" },
+      { "internalType": "string", "name": "royaltiesSessionHash", "type": "string" }
     ],
     "name": "createPatent",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],

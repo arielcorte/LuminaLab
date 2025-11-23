@@ -11,13 +11,15 @@ contract PatentFactory {
     function createPatent(
         string memory patentLink,
         bytes32 patentHash,
-        string memory royaltiesSessionLink
+        string memory royaltiesSessionLink,
+        string memory royaltiesSessionHash
     ) external returns (address) {
         Patent patent = new Patent(
             msg.sender,
             patentLink,
             patentHash,
-            royaltiesSessionLink
+            royaltiesSessionLink,
+            royaltiesSessionHash
         );
         address patentAddr = address(patent);
         allPatents.push(patentAddr);
