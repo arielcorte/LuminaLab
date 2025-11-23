@@ -1,5 +1,7 @@
 "use client";
 
+import CreatePatentForm from "@/components/patents/CreatePatent";
+import { OpenCreatePatentInline } from "@/components/patents/OpenCreatePatentInline";
 import { PatentCard } from "@/components/patents/PatentCard";
 import { useState, useEffect } from "react";
 
@@ -49,6 +51,9 @@ export default function PatentsPage() {
           Support cutting-edge research through donations or early-stage
           micro-investments.
         </p>
+        <div className="m-4">
+          <OpenCreatePatentInline />
+        </div>
 
         {/* GRID */}
         <div
