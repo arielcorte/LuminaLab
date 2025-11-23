@@ -1,217 +1,178 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useCreatePatent } from "@/hooks/useCreatePatent";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { TransactionStatus } from "@/components/blockchain/TransactionStatus";
-import { getUserFriendlyError } from "@/lib/errors";
-import { isValidHash } from "@/lib/format";
+import { usePrivy } from "@privy-io/react-auth";
+import { uploadPatent } from "@/lib/lighthouse";
 
-export default function CreatePatentForm() {
-  const [patentLink, setPatentLink] = useState("");
-  const [patentHash, setPatentHash] = useState("");
-  const [royaltiesSessionLink, setRoyaltiesSessionLink] = useState("");
-  const [royaltiesSessionHash, setRoyaltiesSessionHash] = useState("");
-  const [txStatus, setTxStatus] = useState<"idle" | "pending" | "confirming" | "success" | "error">("idle");
-  const [txHash, setTxHash] = useState<string>();
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+type CreatePatentFormProps = {
+  onCreated?: (metadataCid: string) => void;
+};
 
-  const { createPatent, isLoading, error, patentAddress } = useCreatePatent();
-  const router = useRouter();
+export default function CreatePatentForm({ onCreated }: CreatePatentFormProps) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successCid, setSuccessCid] = useState<string | null>(null);
 
-  const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
+  const { user } = usePrivy();
+  const fallbackWallet = user?.linkedAccounts?.find(
+    (account) => account.type === "wallet",
+  ) as { address?: string } | undefined;
 
-    if (!patentLink.trim()) {
-      errors.patentLink = "Patent link is required";
-    } else if (!patentLink.startsWith("ipfs://") && !patentLink.startsWith("http")) {
-      errors.patentLink = "Please enter a valid IPFS or HTTP URL";
+  const ownerAddress = user?.wallet?.address ?? fallbackWallet?.address;
+
+  const handlePdfChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setPdfFile(e.target.files[0]);
     }
-
-    if (!patentHash.trim()) {
-      errors.patentHash = "Patent hash is required";
-    } else if (!isValidHash(patentHash)) {
-      errors.patentHash = "Invalid hash format. Must be 0x followed by 64 hex characters";
-    }
-
-    if (!royaltiesSessionLink.trim()) {
-      errors.royaltiesSessionLink = "Royalties session link is required";
-    }
-
-    if (!royaltiesSessionHash.trim()) {
-      errors.royaltiesSessionHash = "Royalties session hash is required";
-    }
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    // Validate inputs
-    if (!validateForm()) {
-      toast.error("Please fix the validation errors");
+    if (!pdfFile) {
+      setError("Please attach a PDF before submitting.");
       return;
     }
 
-    setTxStatus("pending");
-    toast.info("Please confirm the transaction in your wallet");
+    const tagList = tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
 
     try {
-      // Create patent on blockchain
-      const result = await createPatent({
-        patentLink,
-        patentHash,
-        royaltiesSessionLink,
-        royaltiesSessionHash,
+      setSubmitting(true);
+      setError(null);
+      setSuccessCid(null);
+
+      const result = await uploadPatent({
+        pdfFile,
+        title,
+        description,
+        tags: tagList,
+        isPublic,
+        ownerAddress,
       });
 
-      if (result.success) {
-        setTxHash(result.transactionHash);
-        setTxStatus("success");
-        toast.success("Patent created successfully!", {
-          description: "Redirecting to your new patent...",
-        });
+      setSuccessCid(result.metadataCid);
+      onCreated?.(result.metadataCid);
 
-        // Redirect after a short delay
-        setTimeout(() => {
-          if (result.patentAddress) {
-            router.push(`/patents/${result.patentAddress}`);
-          }
-        }, 2000);
-      } else {
-        setTxStatus("error");
-        const friendlyError = getUserFriendlyError(result.error);
-        toast.error(friendlyError.title, {
-          description: friendlyError.message,
-        });
-      }
+      setTitle("");
+      setDescription("");
+      setTags("");
+      setPdfFile(null);
+      setIsPublic(true);
     } catch (err) {
-      setTxStatus("error");
-      const friendlyError = getUserFriendlyError(err);
-      toast.error(friendlyError.title, {
-        description: friendlyError.message,
-      });
+      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not upload patent to Lighthouse.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen p-6 animate-fadeIn">
+    <div className="flex justify-center items-start p-6 min-h-screen animate-fadeIn">
       <Card className="w-full max-w-5xl">
         <CardHeader>
           <CardTitle>Create New Patent</CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            Upload your patent document to IPFS/Filecoin first, then provide the details below.
-          </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="patentLink">Patent Document Link (IPFS/Filecoin URI) *</Label>
-                <Input
-                  id="patentLink"
-                  placeholder="e.g. ipfs://QmXxx... or https://..."
-                  value={patentLink}
-                  onChange={(e) => {
-                    setPatentLink(e.target.value);
-                    if (validationErrors.patentLink) {
-                      setValidationErrors((prev) => ({ ...prev, patentLink: "" }));
-                    }
-                  }}
-                  className={validationErrors.patentLink ? "border-red-500" : ""}
-                />
-                {validationErrors.patentLink ? (
-                  <p className="text-xs text-red-600 mt-1">{validationErrors.patentLink}</p>
-                ) : (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Upload your PDF to IPFS/Filecoin and paste the link here
-                  </p>
-                )}
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-6 md:flex-row"
+          >
+            {/* PDF placeholder left */}
+            <div className="flex flex-col flex-shrink-0 justify-center items-center p-4 w-full rounded-lg border border-gray-300 border-dashed md:w-1/3 bg-card">
+              <div className="flex justify-center items-center w-24 h-24 rounded-md border-4 border-gray-300 border-dashed">
+                <span className="text-gray-400">PDF</span>
               </div>
-
-              <div>
-                <Label htmlFor="patentHash">Patent Document Hash (SHA256) *</Label>
-                <Input
-                  id="patentHash"
-                  placeholder="0x... (64 hex characters)"
-                  value={patentHash}
-                  onChange={(e) => {
-                    setPatentHash(e.target.value);
-                    if (validationErrors.patentHash) {
-                      setValidationErrors((prev) => ({ ...prev, patentHash: "" }));
-                    }
-                  }}
-                  className={validationErrors.patentHash ? "border-red-500" : ""}
-                />
-                {validationErrors.patentHash ? (
-                  <p className="text-xs text-red-600 mt-1">{validationErrors.patentHash}</p>
-                ) : (
-                  <p className="text-xs text-gray-500 mt-1">
-                    The SHA256 hash of your patent document for verification
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="royaltiesSessionLink">Royalties Session Link *</Label>
-                <Input
-                  id="royaltiesSessionLink"
-                  placeholder="Link to royalties session details"
-                  value={royaltiesSessionLink}
-                  onChange={(e) => {
-                    setRoyaltiesSessionLink(e.target.value);
-                    if (validationErrors.royaltiesSessionLink) {
-                      setValidationErrors((prev) => ({ ...prev, royaltiesSessionLink: "" }));
-                    }
-                  }}
-                  className={validationErrors.royaltiesSessionLink ? "border-red-500" : ""}
-                />
-                {validationErrors.royaltiesSessionLink && (
-                  <p className="text-xs text-red-600 mt-1">{validationErrors.royaltiesSessionLink}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="royaltiesSessionHash">Royalties Session Hash *</Label>
-                <Input
-                  id="royaltiesSessionHash"
-                  placeholder="Hash of royalties session"
-                  value={royaltiesSessionHash}
-                  onChange={(e) => {
-                    setRoyaltiesSessionHash(e.target.value);
-                    if (validationErrors.royaltiesSessionHash) {
-                      setValidationErrors((prev) => ({ ...prev, royaltiesSessionHash: "" }));
-                    }
-                  }}
-                  className={validationErrors.royaltiesSessionHash ? "border-red-500" : ""}
-                />
-                {validationErrors.royaltiesSessionHash && (
-                  <p className="text-xs text-red-600 mt-1">{validationErrors.royaltiesSessionHash}</p>
-                )}
-              </div>
+              <Input
+                type="file"
+                accept="application/pdf"
+                className="mt-4"
+                onChange={handlePdfChange}
+                disabled={submitting}
+              />
+              {pdfFile && <p className="mt-2 text-sm">{pdfFile.name}</p>}
             </div>
 
-            <TransactionStatus
-              status={txStatus}
-              txHash={txHash}
-              error={error}
-            />
+            {/* Form fields right */}
+            <div className="flex flex-col flex-1 gap-4">
+              <div>
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter patent title"
+                  value={title}
+                  onChange={(e) => setTitle(e.currentTarget.value)}
+                  disabled={submitting}
+                />
+              </div>
 
-            <Button type="submit" disabled={isLoading || txStatus === "success"} className="w-full">
-              {isLoading ? "Creating Patent..." : txStatus === "success" ? "Patent Created!" : "Create Patent on Blockchain"}
-            </Button>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe your invention"
+                  value={description}
+                  onChange={(e) => setDescription(e.currentTarget.value)}
+                  disabled={submitting}
+                />
+              </div>
 
-            <p className="text-xs text-gray-500 text-center">
-              This will create a new patent contract on Base Sepolia. Make sure you have some ETH for gas fees.
-            </p>
+              <div>
+                <Label htmlFor="tags">Tags (comma separated)</Label>
+                <Input
+                  id="tags"
+                  placeholder="e.g. AI, Robotics, Environment"
+                  value={tags}
+                  onChange={(e) => setTags(e.currentTarget.value)}
+                  disabled={submitting}
+                />
+              </div>
+
+              <div className="flex gap-4 items-center">
+                <input
+                  type="checkbox"
+                  id="isPublic"
+                  checked={isPublic}
+                  onChange={() => setIsPublic(!isPublic)}
+                  className="w-4 h-4"
+                  disabled={submitting}
+                />
+                <Label htmlFor="isPublic" className="mb-0">
+                  Public Patent
+                </Label>
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-500" role="alert">
+                  {error}
+                </p>
+              )}
+
+              {successCid && (
+                <p className="text-sm text-green-600">
+                  Patent saved to Lighthouse. Metadata CID: {successCid}
+                </p>
+              )}
+
+              <Button type="submit" className="mt-4" disabled={submitting}>
+                {submitting ? "Uploading..." : "Create Patent"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

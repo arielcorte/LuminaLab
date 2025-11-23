@@ -11,6 +11,7 @@
   "dependencies": {
     "@coinbase/onchainkit": "^1.1.2",
     "@heroui/react": "^2.8.5",
+    "@lighthouse-web3/sdk": "^0.4.3",
     "@privy-io/react-auth": "^3.8.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",

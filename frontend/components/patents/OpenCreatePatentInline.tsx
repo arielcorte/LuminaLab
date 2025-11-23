@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import CreatePatentForm from "./CreatePatent";
 
-export function OpenCreatePatentInline() {
+type OpenCreatePatentInlineProps = {
+  onCreated?: (metadataCid: string) => void;
+};
+
+export function OpenCreatePatentInline({
+  onCreated,
+}: OpenCreatePatentInlineProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -25,7 +31,12 @@ export function OpenCreatePatentInline() {
             >
             Close Form
           </Button>
-          <CreatePatentForm />
+          <CreatePatentForm
+            onCreated={(cid) => {
+              onCreated?.(cid);
+              setOpen(false);
+            }}
+          />
         </>
       )}
     </div>

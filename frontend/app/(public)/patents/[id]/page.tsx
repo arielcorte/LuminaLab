@@ -1,36 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PDFViewer } from "@/components/patents/PDFViewer";
 import { usePrivy } from "@privy-io/react-auth";
-import { usePatentDetails } from "@/hooks/usePatentDetails";
-import { useDonateToPatent } from "@/hooks/useDonateToPatent";
-import { Input } from "@/components/ui/input";
-import { AddressDisplay } from "@/components/blockchain/AddressDisplay";
-import { TransactionStatus } from "@/components/blockchain/TransactionStatus";
-import { toast } from "sonner";
-import { getUserFriendlyError } from "@/lib/errors";
-import { formatEth, truncateHash } from "@/lib/format";
+import { buildPdfUrl, fetchPatentMetadata } from "@/lib/lighthouse";
+
+type PatentDetails = {
+  title: string;
+  researcher: string;
+  description: string;
+  tags: string[];
+  ownerAddress?: string;
+  pdfCid: string;
+  pdfUrl: string;
+};
 
 export default function PatentPage() {
   const params = useParams();
-  const { id } = params as { id: string };
-  const { authenticated } = usePrivy();
-  const [donationAmount, setDonationAmount] = useState("0.01");
-  const [txStatus, setTxStatus] = useState<"idle" | "pending" | "confirming" | "success" | "error">("idle");
-  const [txHash, setTxHash] = useState<string>();
+  const paramId = params?.id;
+  const patentId = useMemo(
+    () => (Array.isArray(paramId) ? paramId[0] : paramId),
+    [paramId],
+  );
 
+  const [patent, setPatent] = useState<PatentDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { authenticated } = usePrivy();
   const router = useRouter();
   const [count, setCount] = useState(5);
 
   // Fetch patent details from blockchain
   const { details, loading } = usePatentDetails(id);
-  const { donate, isLoading: isDonating, error: donateError } = useDonateToPatent();
+  const {
+    donate,
+    isLoading: isDonating,
+    error: donateError,
+  } = useDonateToPatent();
 
   useEffect(() => {
     if (!authenticated) {
@@ -48,9 +65,45 @@ export default function PatentPage() {
     }
   }, [authenticated, router]);
 
+  useEffect(() => {
+    if (!authenticated || !patentId) return;
+
+    async function loadPatent() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const metadata = await fetchPatentMetadata(patentId);
+        if (!metadata?.pdfCid) {
+          throw new Error("Patent metadata is missing the PDF reference.");
+        }
+
+        setPatent({
+          title: metadata.title,
+          description: metadata.description,
+          tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+          researcher: metadata.ownerAddress ?? "Unknown researcher",
+          ownerAddress: metadata.ownerAddress,
+          pdfCid: metadata.pdfCid,
+          pdfUrl: buildPdfUrl(metadata.pdfCid),
+        });
+      } catch (err) {
+        console.error(err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load patent details.",
+        );
+        setPatent(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPatent();
+  }, [authenticated, patentId]);
+
   if (!authenticated) {
     return (
-      <div className="flex flex-col items-center justify-center py-10">
+      <div className="flex flex-col justify-center items-center py-10">
         <p className="text-xl font-semibold">Login to see this patent!</p>
         <p className="mt-2 text-gray-600">Redirecting to home in {count}...</p>
       </div>
@@ -59,16 +112,20 @@ export default function PatentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Loading patent details...</p>
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-gray-500 dark:text-gray-400">
+          Loading patent details...
+        </p>
       </div>
     );
   }
 
-  if (!details) {
+  if (error || !patent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Patent not found</p>
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-red-500 dark:text-red-400">
+          {error ?? "Patent not found"}
+        </p>
       </div>
     );
   }
@@ -116,172 +173,35 @@ export default function PatentPage() {
   };
 
   return (
-    <div className="min-h-screen px-6 py-10 flex flex-col items-center">
-      <Card className="w-full max-w-3xl p-10">
+    <div className="flex flex-col items-center py-10 px-6 min-h-screen">
+      <Card className="p-10 w-full max-w-3xl">
         <CardHeader>
           <CardTitle className="text-3xl">Patent Details</CardTitle>
-          <CardDescription className="text-gray-500 dark:text-gray-400 mt-2">
+          <CardDescription className="mt-2 text-gray-500 dark:text-gray-400">
             <AddressDisplay address={details.owner} label="Owner" />
           </CardDescription>
         </CardHeader>
-        <CardContent className="mt-4 space-y-6">
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Contract Address</h3>
-            <AddressDisplay address={id} truncate={false} />
+        <CardContent className="mt-4 space-y-4">
+          <p className="text-gray-700 dark:text-gray-200">
+            {patent.description}
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            {patent.tags.map((tag) => (
+              <Badge key={tag}>{tag}</Badge>
+            ))}
           </div>
 
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Patent Document</h3>
-            <a
-              href={details.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline break-all inline-flex items-center gap-2"
-            >
-              {details.link}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" x2="21" y1="14" y2="3" />
-              </svg>
-            </a>
-          </div>
+          <PDFViewer pdfUrl={patent.pdfUrl} />
 
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Document Hash</h3>
-            <code className="text-sm font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded break-all block">
-              {details.hash}
-            </code>
-            <p className="text-xs text-gray-500">
-              Use this hash to verify document integrity
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Royalties Session</h3>
-            <a
-              href={details.royaltiesLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline break-all inline-flex items-center gap-2"
-            >
-              {details.royaltiesLink}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" x2="21" y1="14" y2="3" />
-              </svg>
-            </a>
-          </div>
-
-          <div className="space-y-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <h3 className="font-semibold text-lg">Statistics</h3>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Total Donors:</span>
-                <span className="font-semibold text-lg">{details.donorsCount}</span>
-              </div>
-            </div>
-          </div>
-
-          {details.link && (
-            <PDFViewer pdfUrl={details.link} />
-          )}
-
-          <div className="mt-6 space-y-4 border-t pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-blue-600 dark:text-blue-400"
-                >
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Support This Patent</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Funds go directly to the patent owner's wallet
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <div className="flex gap-2 items-end flex-wrap">
-                <div className="flex-1 min-w-[200px]">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                    Amount (ETH)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.001"
-                    min="0.001"
-                    value={donationAmount}
-                    onChange={(e) => setDonationAmount(e.target.value)}
-                    placeholder="0.01"
-                    className="text-lg"
-                  />
-                </div>
-                <Button
-                  onClick={handleDonate}
-                  disabled={isDonating || txStatus === "pending" || txStatus === "confirming"}
-                  className="min-w-[140px] h-10"
-                  size="lg"
-                >
-                  {isDonating || txStatus === "pending" || txStatus === "confirming"
-                    ? "Processing..."
-                    : "Donate Now"}
-                </Button>
-              </div>
-
-              <div className="flex gap-2 flex-wrap">
-                {["0.001", "0.01", "0.1", "1"].map((amount) => (
-                  <Button
-                    key={amount}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDonationAmount(amount)}
-                    disabled={txStatus === "pending" || txStatus === "confirming"}
-                  >
-                    {amount} ETH
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <TransactionStatus
-              status={txStatus}
-              txHash={txHash}
-              error={donateError || undefined}
-            />
+          <div className="flex flex-wrap gap-4 items-center mt-6">
+            {patent.ownerAddress && (
+              <p className="text-gray-700 dark:text-gray-200">
+                Owner address: {patent.ownerAddress}
+              </p>
+            )}
+            <Button>Donate</Button>
+            <Button>Invest</Button>
           </div>
         </CardContent>
       </Card>
