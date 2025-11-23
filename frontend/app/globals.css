@@ -12,6 +12,11 @@
   animation: fadeIn 0.4s ease-out;
 }
 
+/* set privy popup z-index above sidebar */
+#_r_0_ {
+  z-index: 500;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
