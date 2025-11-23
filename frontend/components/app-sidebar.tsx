@@ -10,11 +10,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { UserPill } from "@privy-io/react-auth/ui";
-import { HomeIcon, Scroll } from "lucide-react";
+import { HomeIcon, Scroll, User } from "lucide-react";
 
 const items = [
-  { url: "/dashboard", title: "Home", icon: HomeIcon },
-  { url: "/dashboard/patents", title: "Patents", icon: Scroll },
+  { url: "/", title: "Home", icon: HomeIcon },
+  { url: "/patents", title: "Patents", icon: Scroll },
+  { url: "/profile/", title: "Profile", icon: User },
+
 ];
 
 export function AppSidebar() {

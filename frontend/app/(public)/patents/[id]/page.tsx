@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PDFViewer } from "@/components/patents/PDFViewer";
+import { usePrivy } from "@privy-io/react-auth";
 
 type Patent = {
   id: string;
@@ -52,6 +53,36 @@ export default function PatentPage() {
   const params = useParams();
   const { id } = params;
   const [patent, setPatent] = useState<Patent | null>(null);
+  const { authenticated } = usePrivy();
+
+  const router = useRouter();
+  const [count, setCount] = useState(5);
+
+  useEffect(() => {
+    if (!authenticated) {
+      const interval = setInterval(() => {
+        setCount((c) => {
+          if (c <= 1) {
+            router.push("/");
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [authenticated, router]);
+
+  if (!authenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center py-10">
+        <p className="text-xl font-semibold">Login to see this patent!</p>
+        <p className="mt-2 text-gray-600">Redirecting to home in {count}...</p>
+      </div>
+    );
+  }
+
 
   useEffect(() => {
     const found = MOCK_PATENTS.find((p) => p.id === id);

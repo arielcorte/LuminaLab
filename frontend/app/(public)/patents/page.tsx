@@ -1,8 +1,8 @@
 "use client";
 
-import CreatePatentForm from "@/components/patents/CreatePatent";
 import { OpenCreatePatentInline } from "@/components/patents/OpenCreatePatentInline";
 import { PatentCard } from "@/components/patents/PatentCard";
+import { usePrivy } from "@privy-io/react-auth";
 import { useState, useEffect } from "react";
 
 const MOCK_PATENTS = [
@@ -30,10 +30,36 @@ const MOCK_PATENTS = [
       "Autonomous surface robots that identify, cluster, and collect microplastics.",
     tags: ["AI", "Robotics", "Environment"],
   },
+  {
+    id: "4",
+    title: "Quantum-Resilient Encryption Layer",
+    researcher: "Dr. Sofia Martínez",
+    description:
+      "A lightweight cryptographic layer designed for post-quantum resistance in IoT devices.",
+    tags: ["Cryptography", "IoT", "Quantum"],
+  },
+  {
+    id: "5",
+    title: "Bio-Reactive Nanocoating for Implants",
+    researcher: "Dr. Alex Kim",
+    description:
+      "A self-healing nanocoating that reduces inflammation around metallic implants.",
+    tags: ["Biotech", "Nanotech"],
+  },
+  {
+    id: "6",
+    title: "AI-Driven Ocean Plastic Collector",
+    researcher: "Ing. Carla Ruiz",
+    description:
+      "Autonomous surface robots that identify, cluster, and collect microplastics.",
+    tags: ["AI", "Robotics", "Environment"],
+  },
 ];
 
 export default function PatentsPage() {
   const [patents, setPatents] = useState<any[]>([]);
+  const { ready, authenticated} = usePrivy();
+
 
   useEffect(() => {
     // Simulación de fetch
@@ -51,9 +77,11 @@ export default function PatentsPage() {
           Support cutting-edge research through donations or early-stage
           micro-investments.
         </p>
+        {authenticated && (
         <div className="m-4">
           <OpenCreatePatentInline />
         </div>
+        )}
 
         {/* GRID */}
         <div
