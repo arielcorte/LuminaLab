@@ -1,6 +1,6 @@
 "use client";
 
-import { PatentCard } from "@/components/ui/PatentCard";
+import { PatentCard } from "@/components/patents/PatentCard";
 import { useState, useEffect } from "react";
 
 const MOCK_PATENTS = [

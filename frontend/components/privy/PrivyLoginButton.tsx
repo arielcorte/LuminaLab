@@ -8,7 +8,7 @@ export default function PrivyLoginButton() {
     const disableLogin = !ready || (ready && authenticated);
 
     return (
-        <Button disabled={disableLogin} onClick={login}>
+        <Button disabled={disableLogin} onClick={login} size="lg">
             Log in
         </Button>
     );
