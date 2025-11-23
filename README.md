@@ -1,5 +1,5 @@
 
-# Eureka: Decentralized Patents for Latin America
+# Eureka: Decentralized Patents for Argentina
 
 > ETHGlobal Hackathon Submission
 
