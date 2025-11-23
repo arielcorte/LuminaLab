@@ -83,7 +83,7 @@ export default function PatentPage() {
         setLoading(true);
         setError(null);
 
-        const metadata = await fetchPatentMetadata(patentId);
+        const metadata = await fetchPatentMetadata(patentId || "");
         if (!metadata?.pdfCid) {
           throw new Error("Patent metadata is missing the PDF reference.");
         }
@@ -254,6 +254,15 @@ export default function PatentPage() {
                 Patent Document
               </h3>
               <PDFViewer pdfUrl={patent.pdfUrl} />
+            </div>
+
+            {/* Buy Action */}
+            <div className="pt-6 border-t flex justify-end">
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href={`/patents/${patentId}/buy`}>
+                  Buy Patent Rights
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

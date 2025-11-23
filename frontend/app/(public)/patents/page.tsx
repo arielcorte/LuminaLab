@@ -13,18 +13,17 @@ export default function PatentsPage() {
   const { patents, loading, error } = useLighthousePatents(refreshKey);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       {/* Hero Section */}
       <div className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
         <div className="w-full px-8 py-16">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <FileText className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h1 className="text-5xl font-bold tracking-tight text-black dark:text-white">
               Patent Registry
             </h1>
           </div>
 
-          <p className="mx-auto max-w-2xl text-center text-lg text-gray-600 dark:text-gray-300">
+          <p className="mx-auto max-w-2xl text-center text-lg text-black dark:text-gray-300">
             Explore innovative research and scientific breakthroughs stored on the blockchain
           </p>
 
