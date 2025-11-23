@@ -26,7 +26,7 @@ export default function HomePage() {
 
         <div className="flex gap-4 justify-center pt-4">
           <Button asChild size="lg">
-            <Link href="/patents">I'm a scientist</Link>
+            <Link href="/patents">Explore Patents</Link>
           </Button>
 
           <PrivyLoginButton />
