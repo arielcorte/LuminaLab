@@ -42,9 +42,7 @@ Eureka is a decentralized platform that connects researchers with supporters thr
 
 🎨 **Professional UX**
 - Real-time transaction status tracking
-- Toast notifications for all actions
 - Form validation with inline errors
-- Mobile-responsive design
 - One-click address copying
 - Direct blockchain explorer links
 
@@ -105,7 +103,6 @@ Eureka is a decentralized platform that connects researchers with supporters thr
 - **Styling**: TailwindCSS
 - **Blockchain**: Wagmi v2 + Viem
 - **Wallet**: Privy
-- **Notifications**: Sonner (toast)
 - **UI Components**: shadcn/ui
 
 ## 📖 Documentation
@@ -140,7 +137,6 @@ All donations are recorded on-chain, providing complete transparency to donors a
 - Wagmi v2
 - Viem
 - Privy
-- Sonner
 
 **Blockchain**
 - Base Sepolia (testnet)
@@ -191,10 +187,7 @@ eureka/
 4. Confirm transaction in wallet
 5. See success notification
 
-## Team
 
-- Franco Cerino
-- Ariel Corte
 
 ## License
 
