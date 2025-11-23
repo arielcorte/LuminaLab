@@ -1,7 +1,17 @@
 # Eureka
-A platform that facilitates patent creation, use and safekeeping in latin america.
+
+A platform for decentralized patent creation, management, and funding in Latin America.  
+Built for ETHGlobal hackathons.
+
+## Quick Start (Hackathon)
+
+- Deploy contracts on Sepolia testnet (recommended).
+- Use `python deploy.py` or see [README_deploy_contract.md](./README_deploy_contract.md) for step-by-step instructions.
+- ABIs for frontend integration are in `frontend/PatentABI.js` and `frontend/FactoryABI.js`.
 
 
+
+ganache-cli
 
 ## Contract Deployment
 
@@ -9,113 +19,71 @@ This project includes scripts for deploying the smart contracts using **Python**
 
 ### Prerequisites
 
-  * Python 3.8 or higher
-  * pip (Python package manager)
+- Python 3.8 or higher
+- pip (Python package manager)
+- Node.js (for Solidity compilation)
+- Test ETH on Sepolia
 
 ### Installation
 
-1.  Install the required dependencies:
+1. Install dependencies:
+  ```bash
+  pip install -r requirements.txt
+  ```
 
-<!-- end list -->
-
-```bash
-pip install -r requirements.txt
-```
-
-2.  Create a **`.env`** file in the project's root directory:
-
-<!-- end list -->
-
-```env
-RPC_URL=http://127.0.0.1:8545
-PRIVATE_KEY=your_private_key_without_0x
-```
+2. Create a `.env` file:
+  ```env
+  RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+  PRIVATE_KEY=your_private_key_without_0x
+  ```
 
 ### Deployment
 
-#### Option 1: Local Network
-
-1.  Start a local development network (Ganache, Hardhat node, or any local node):
-
-<!-- end list -->
-
-```bash
-# Example with Ganache CLI
-ganache-cli
-
-# Or with Hardhat
-npx hardhat node
-```
-
-2.  In a separate terminal, execute the deployment script:
-
-<!-- end list -->
-
+Run:
 ```bash
 python deploy.py
 ```
+See [README_deploy_contract.md](./README_deploy_contract.md) for advanced options and troubleshooting.
 
-#### Option 2: Sepolia Testnet
+## Frontend Integration
 
-1.  Configure your **`.env`** file with:
+- Use the ABIs in `frontend/PatentABI.js` and `frontend/FactoryABI.js`.
+- Example: Connect to the Factory contract and create a new patent.
 
-<!-- end list -->
+## Team & Contact
 
-```env
-RPC_URL=https://sepolia.infura.io/v3/YOUR_PROJECT_ID
-PRIVATE_KEY=your_private_key
-```
-
-2.  Ensure your account has test ETH on Sepolia.
-
-3.  Execute:
-
-<!-- end list -->
-
-```bash
-python deploy.py
-```
-
-#### Option 3: Mainnet
-
-**WARNING**: Only deploy to Mainnet if you are completely sure and ready.
-
-1.  Configure your **`.env`** file with the Mainnet RPC URL.
-2.  Verify that you have sufficient ETH for gas fees.
-3.  Execute:
-
-<!-- end list -->
-
-```bash
-python deploy.py
-```
+- Project lead: [your name or team]
+- Contact: [email or Discord]
 
 -----
+
 
 ## Contract Structure
 
-  * **PatentFactory**: A **factory contract** that creates new instances of the **Patent** contract.
-  * **Patent**: An **individual contract** representing a patent, featuring:
-      * Owner address
-      * Link to the patent PDF file (e.g., IPFS URI)
-      * SHA256 hash of the PDF file (for integrity verification)
-      * Functions for depositing and withdrawing funds
+- **PatentFactory**: Factory contract that creates new instances of the **Patent** contract.
+- **Patent**: Individual contract representing a patent, featuring:
+  - Owner address
+  - Link to the patent PDF file (e.g., IPFS URI)
+  - SHA256 hash of the PDF file (for integrity verification)
+  - Functions for donations and ownership transfer
 
 -----
+
 
 ## Deployment Information
 
 After each deployment, the resulting information is saved in `deployments/[network].json`, including:
 
-  * Deployed contract address
-  * Transaction hash
-  * Network and Chain ID
-  * Deployer account
+- Deployed contract address
+- Transaction hash
+- Network and Chain ID
+- Deployer account
 
 -----
 
+
 ## Security Notes
 
-  * **NEVER** share your **`.env`** file or your private key.
-  * Use dedicated **test accounts** for development.
-  * Always **verify contract addresses** before interacting with them.
+- **NEVER** share your **`.env`** file or your private key.
+- Use dedicated **test accounts** for development.
+- Always **verify contract addresses** before interacting with them.
