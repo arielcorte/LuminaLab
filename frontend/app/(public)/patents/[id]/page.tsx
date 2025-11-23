@@ -14,6 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { PDFViewer } from "@/components/patents/PDFViewer";
 import { usePrivy } from "@privy-io/react-auth";
 import { buildPdfUrl, fetchPatentMetadata } from "@/lib/lighthouse";
+import { ArrowLeft, Copy, Check, ExternalLink, Loader2 } from "lucide-react";
+import { truncateAddress, copyToClipboard, getExplorerAddressUrl } from "@/lib/format";
+import { toast } from "sonner";
+import Link from "next/link";
 
 type PatentDetails = {
   title: string;
@@ -36,18 +40,24 @@ export default function PatentPage() {
   const [patent, setPatent] = useState<PatentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { authenticated } = usePrivy();
   const router = useRouter();
   const [count, setCount] = useState(5);
 
-  // Fetch patent details from blockchain
-  const { details, loading } = usePatentDetails(id);
-  const {
-    donate,
-    isLoading: isDonating,
-    error: donateError,
-  } = useDonateToPatent();
+  const handleCopyAddress = async () => {
+    if (!patent?.ownerAddress) return;
+
+    const success = await copyToClipboard(patent.ownerAddress);
+    if (success) {
+      setCopied(true);
+      toast.success("Address copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      toast.error("Failed to copy address");
+    }
+  };
 
   useEffect(() => {
     if (!authenticated) {
@@ -103,16 +113,22 @@ export default function PatentPage() {
 
   if (!authenticated) {
     return (
-      <div className="flex flex-col justify-center items-center py-10">
-        <p className="text-xl font-semibold">Login to see this patent!</p>
-        <p className="mt-2 text-gray-600">Redirecting to home in {count}...</p>
+      <div className="flex flex-col justify-center items-center min-h-screen px-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-2">Authentication Required</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-1">
+            Please login to view patent details
+          </p>
+          <p className="text-sm text-gray-500">Redirecting to home in {count}s...</p>
+        </div>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mb-4" />
         <p className="text-gray-500 dark:text-gray-400">
           Loading patent details...
         </p>
@@ -122,89 +138,126 @@ export default function PatentPage() {
 
   if (error || !patent) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-red-500 dark:text-red-400">
-          {error ?? "Patent not found"}
-        </p>
+      <div className="flex flex-col justify-center items-center min-h-screen px-6">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+            <ExternalLink className="w-8 h-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
+            Patent Not Found
+          </h2>
+          <p className="text-red-600 dark:text-red-400 mb-6">
+            {error ?? "The requested patent could not be found"}
+          </p>
+          <Button asChild>
+            <Link href="/patents">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Patents
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
-  const handleDonate = async () => {
-    if (!donationAmount || parseFloat(donationAmount) <= 0) {
-      toast.error("Invalid Amount", {
-        description: "Please enter a valid donation amount greater than 0",
-      });
-      return;
-    }
-
-    setTxStatus("pending");
-    toast.info("Please confirm the donation in your wallet");
-
-    try {
-      const result = await donate(id, donationAmount);
-
-      if (result.success) {
-        setTxHash(result.transactionHash);
-        setTxStatus("success");
-        toast.success("Donation successful!", {
-          description: `You donated ${formatEth(donationAmount)} ETH to this patent`,
-        });
-
-        // Reset form after success
-        setTimeout(() => {
-          setTxStatus("idle");
-          setDonationAmount("0.01");
-        }, 3000);
-      } else {
-        setTxStatus("error");
-        const friendlyError = getUserFriendlyError(result.error);
-        toast.error(friendlyError.title, {
-          description: friendlyError.message,
-        });
-      }
-    } catch (err) {
-      setTxStatus("error");
-      const friendlyError = getUserFriendlyError(err);
-      toast.error(friendlyError.title, {
-        description: friendlyError.message,
-      });
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center py-10 px-6 min-h-screen">
-      <Card className="p-10 w-full max-w-3xl">
-        <CardHeader>
-          <CardTitle className="text-3xl">Patent Details</CardTitle>
-          <CardDescription className="mt-2 text-gray-500 dark:text-gray-400">
-            <AddressDisplay address={details.owner} label="Owner" />
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="mt-4 space-y-4">
-          <p className="text-gray-700 dark:text-gray-200">
-            {patent.description}
-          </p>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      {/* Navigation */}
+      <div className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+        <div className="w-full px-8 py-4">
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/patents">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Patents
+            </Link>
+          </Button>
+        </div>
+      </div>
 
-          <div className="flex flex-wrap gap-2">
-            {patent.tags.map((tag) => (
-              <Badge key={tag}>{tag}</Badge>
-            ))}
-          </div>
+      {/* Content */}
+      <div className="w-full px-8 py-10">
+        <Card className="overflow-hidden">
+          {/* Header Section */}
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-b pb-8">
+            <CardTitle className="text-3xl md:text-4xl font-bold mb-4">
+              {patent.title}
+            </CardTitle>
 
-          <PDFViewer pdfUrl={patent.pdfUrl} />
-
-          <div className="flex flex-wrap gap-4 items-center mt-6">
+            {/* Owner Info */}
             {patent.ownerAddress && (
-              <p className="text-gray-700 dark:text-gray-200">
-                Owner address: {patent.ownerAddress}
-              </p>
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                  Patent Owner
+                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <code className="px-3 py-2 text-sm font-mono bg-white dark:bg-gray-900 border rounded-lg">
+                    {truncateAddress(patent.ownerAddress)}
+                  </code>
+
+                  <button
+                    onClick={handleCopyAddress}
+                    className="p-2 hover:bg-white dark:hover:bg-gray-900 rounded-lg transition-colors border"
+                    title="Copy address"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-gray-500" />
+                    )}
+                  </button>
+
+                  <a
+                    href={getExplorerAddressUrl(patent.ownerAddress)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 hover:bg-white dark:hover:bg-gray-900 rounded-lg transition-colors border"
+                    title="View on block explorer"
+                  >
+                    <ExternalLink className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </a>
+                </div>
+              </div>
             )}
-            <Button>Donate</Button>
-            <Button>Invest</Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+
+          {/* Content Section */}
+          <CardContent className="p-8 space-y-6">
+            {/* Tags */}
+            {patent.tags.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                  Research Areas
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {patent.tags.map((tag) => (
+                    <Badge key={tag} variant="outline" className="px-3 py-1">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Description
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                {patent.description}
+              </p>
+            </div>
+
+            {/* PDF Viewer */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Patent Document
+              </h3>
+              <PDFViewer pdfUrl={patent.pdfUrl} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

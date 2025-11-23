@@ -11,9 +11,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
-      {children}
-      </main>
+      <main>{children}</main>
     </SidebarProvider>
   );
 }
