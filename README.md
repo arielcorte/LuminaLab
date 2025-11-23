@@ -1,13 +1,55 @@
-# Eureka
 
-A platform for decentralized patent creation, management, and funding in Latin America.  
-Built for ETHGlobal hackathons.
+# Eureka: Decentralized Patents for Latin America
 
-## Quick Start (Hackathon)
+> ETHGlobal Hackathon Submission
 
-- Deploy contracts on Sepolia testnet (recommended).
-- Use `python deploy.py` or see [README_deploy_contract.md](./README_deploy_contract.md) for step-by-step instructions.
-- ABIs for frontend integration are in `frontend/PatentABI.js` and `frontend/FactoryABI.js`.
+## Demo
+[Live Demo](https://your-demo-url)
+<!-- ![Screenshot](./screenshot.png) -->
+
+## What is Eureka?
+Eureka lets researchers create, fund, and manage patents on-chain, with decentralized storage and transparent donations.
+
+## Quick Start
+
+```sh
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Deploy contracts to Sepolia
+python deploy.py
+
+# 3. Run frontend
+cd frontend
+npm install
+npm run dev
+```
+
+## Features
+- Patent creation and management
+- Filecoin/IPFS storage for documents
+- Transparent donations to researchers
+- Factory contract for scalable deployments
+
+## How it works
+- Users upload patent PDFs to Filecoin/IPFS
+- CIDs and hashes are stored on-chain
+- Donors send ETH directly to patent owners
+
+## Contract Addresses
+- PatentFactory (Sepolia): `0x...`
+- Patent (example): `0x...`
+
+## How to Interact
+- Use ABIs in `frontend/PatentABI.js` and `frontend/FactoryABI.js`
+- Example: Create a patent via frontend or script
+
+## Team
+- Franco Cerino, Ariel Corte, [others]
+- Contact: [email/discord]
+
+## License
+MIT
 
 
 
