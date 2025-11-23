@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import PrivyLoginButton from "@/components/privy/PrivyLoginButton";
 
 export default function HomePage() {
   return (
@@ -23,9 +24,7 @@ export default function HomePage() {
             <Link href="/patents">Explore Patents</Link>
           </Button>
 
-          <Button asChild size="lg" variant="secondary">
-            <Link href="/login">Login as Researcher</Link>
-          </Button>
+          <PrivyLoginButton />
         </div>
       </div>
 
