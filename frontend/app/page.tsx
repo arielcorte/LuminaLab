@@ -14,8 +14,8 @@ export default function HomePage() {
   return (
     <div className="flex flex-col justify-center items-center py-16 px-4 min-h-screen bg-background text-foreground">
       {/* Hero */}
-      <div className="space-y-6 max-w-2xl text-center">
-        <h1 className="text-4xl font-bold md:text-5xl">
+      <div className="space-y-6 max-w-2xl text-center opacity-100 transition-opacity duration-300">
+        <h1 className="text-4xl font-bold md:text-5xl gradient-text-blue-purple">
           Eureka — Funding Innovation Through Collective Intelligence
         </h1>
 
@@ -25,7 +25,7 @@ export default function HomePage() {
         </p>
 
         <div className="flex gap-4 justify-center pt-4">
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/patents">Explore Patents</Link>
           </Button>
 
@@ -35,9 +35,9 @@ export default function HomePage() {
 
       {/* Feature Cards */}
       <div className="grid grid-cols-1 gap-6 mt-20 w-full max-w-5xl md:grid-cols-3">
-        <Card className="p-4">
+        <Card className="p-4 border-border/50 card-glow transition-all duration-300">
           <CardHeader>
-            <CardTitle>Decentralized Identity</CardTitle>
+            <CardTitle className="text-foreground">Decentralized Identity</CardTitle>
             <CardDescription>
               Researchers authenticate using Account Abstraction for secure
               onboarding.
@@ -45,9 +45,9 @@ export default function HomePage() {
           </CardHeader>
         </Card>
 
-        <Card className="p-4">
+        <Card className="p-4 border-border/50 card-glow transition-all duration-300">
           <CardHeader>
-            <CardTitle>Transparent Donations</CardTitle>
+            <CardTitle className="text-foreground">Transparent Donations</CardTitle>
             <CardDescription>
               All transactions remain traceable, enabling anyone to support
               science confidently.
@@ -55,9 +55,9 @@ export default function HomePage() {
           </CardHeader>
         </Card>
 
-        <Card className="p-4">
+        <Card className="p-4 border-border/50 card-glow transition-all duration-300">
           <CardHeader>
-            <CardTitle>Micro-Investments</CardTitle>
+            <CardTitle className="text-foreground">Micro-Investments</CardTitle>
             <CardDescription>
               Invest in early-stage patents and track your involvement through a
               dedicated dashboard.

@@ -40,34 +40,36 @@ export function PatentCard({
   };
 
   return (
-    <Card className="flex flex-col p-7">
+    <Card className="flex flex-col p-6 group hover:shadow-lg transition-all duration-300 border-border/50 card-glow bg-card">
       {/* Header Section */}
-      <CardTitle className="flex flex-col items-start gap-2">
-        <h3 className="text-xl font-semibold">{title}</h3>
+      <CardTitle className="flex flex-col items-start gap-3 mb-4">
+        <h3 className="text-xl font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
 
         {/* Researcher Address */}
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-500 dark:text-gray-400">by</span>
-          <code className="px-2 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-800 rounded">
+        <div className="flex items-center gap-2 text-sm w-full">
+          <span className="text-muted-foreground text-xs">by</span>
+          <code className="px-2 py-1 text-xs font-mono bg-muted/50 border border-border rounded ring-1 ring-primary/10">
             {truncateAddress(researcher)}
           </code>
           <button
             onClick={handleCopyAddress}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            className="p-1 hover:bg-accent rounded transition-all ml-auto"
             title="Copy address"
           >
             {copied ? (
-              <Check className="w-3 h-3 text-green-500" />
+              <Check className="w-3 h-3 text-primary" />
             ) : (
-              <Copy className="w-3 h-3 text-gray-500" />
+              <Copy className="w-3 h-3 text-muted-foreground hover:text-foreground" />
             )}
           </button>
         </div>
       </CardTitle>
 
       {/* Content Section */}
-      <CardContent>
-        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">
+      <CardContent className="flex-1">
+        <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed">
           {description}
         </p>
 
@@ -75,7 +77,11 @@ export function PatentCard({
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
             {tags.map((tag) => (
-              <Badge key={tag} variant="outline" color="primary">
+              <Badge
+                key={tag}
+                variant="outline"
+                className="text-xs bg-primary/5 border-primary/20 text-primary"
+              >
                 {tag}
               </Badge>
             ))}
@@ -84,8 +90,8 @@ export function PatentCard({
       </CardContent>
 
       {/* Actions Section */}
-      <CardFooter className="mt-auto pt-4">
-        <Button asChild className="w-full">
+      <CardFooter className="mt-4 pt-4 border-t border-border/50">
+        <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
           <Link href={`/patents/${id}`}>View Details</Link>
         </Button>
       </CardFooter>

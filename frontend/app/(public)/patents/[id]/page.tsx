@@ -113,13 +113,16 @@ export default function PatentPage() {
 
   if (!authenticated) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen px-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-2">Authentication Required</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-1">
+      <div className="flex flex-col justify-center items-center min-h-screen px-6 bg-background">
+        <div className="text-center p-8 rounded-xl border border-border bg-card">
+          <h2 className="text-2xl font-semibold mb-2 text-foreground">Authentication Required</h2>
+          <p className="text-muted-foreground mb-1">
             Please login to view patent details
           </p>
-          <p className="text-sm text-gray-500">Redirecting to home in {count}s...</p>
+          <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
+            Redirecting to home in {count}s...
+            <div className="h-2 w-2 rounded-full bg-primary animate-glow" />
+          </p>
         </div>
       </div>
     );
@@ -127,9 +130,12 @@ export default function PatentPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mb-4" />
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-background">
+        <div className="relative">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+          <div className="absolute inset-0 blur-xl bg-primary/30 animate-pulse" />
+        </div>
+        <p className="text-muted-foreground">
           Loading patent details...
         </p>
       </div>
@@ -138,18 +144,18 @@ export default function PatentPage() {
 
   if (error || !patent) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen px-6">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-            <ExternalLink className="w-8 h-8 text-red-600 dark:text-red-400" />
+      <div className="flex flex-col justify-center items-center min-h-screen px-6 bg-background">
+        <div className="text-center max-w-md p-8 rounded-xl border border-border bg-card">
+          <div className="w-16 h-16 mx-auto mb-4 bg-destructive/10 rounded-full flex items-center justify-center ring-1 ring-destructive/20">
+            <ExternalLink className="w-8 h-8 text-destructive" />
           </div>
-          <h2 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
+          <h2 className="text-2xl font-semibold mb-2 text-foreground">
             Patent Not Found
           </h2>
-          <p className="text-red-600 dark:text-red-400 mb-6">
+          <p className="text-destructive mb-6">
             {error ?? "The requested patent could not be found"}
           </p>
-          <Button asChild>
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/patents">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Patents
@@ -161,9 +167,9 @@ export default function PatentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <div className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+      <div className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="w-full px-8 py-4">
           <Button asChild variant="ghost" size="sm">
             <Link href="/patents">
@@ -176,61 +182,70 @@ export default function PatentPage() {
 
       {/* Content */}
       <div className="w-full px-8 py-10">
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden card-glow border-border/50">
           {/* Header Section */}
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-b pb-8">
-            <CardTitle className="text-3xl md:text-4xl font-bold mb-4">
-              {patent.title}
-            </CardTitle>
+          <CardHeader className="relative bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 border-b border-border pb-8">
+            <div className="absolute inset-0 grid-bg opacity-30" />
+            <div className="relative">
+              <CardTitle className="text-3xl md:text-4xl font-bold mb-4 gradient-text-blue-purple">
+                {patent.title}
+              </CardTitle>
 
-            {/* Owner Info */}
-            {patent.ownerAddress && (
-              <div className="flex flex-col gap-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                  Patent Owner
-                </p>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <code className="px-3 py-2 text-sm font-mono bg-white dark:bg-gray-900 border rounded-lg">
-                    {truncateAddress(patent.ownerAddress)}
-                  </code>
+              {/* Owner Info */}
+              {patent.ownerAddress && (
+                <div className="flex flex-col gap-3">
+                  <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+                    <span>Patent Owner</span>
+                    <div className="h-1 w-1 rounded-full bg-primary animate-glow" />
+                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <code className="px-3 py-2 text-sm font-mono bg-muted/50 border border-border rounded-lg ring-1 ring-primary/10">
+                      {truncateAddress(patent.ownerAddress)}
+                    </code>
 
-                  <button
-                    onClick={handleCopyAddress}
-                    className="p-2 hover:bg-white dark:hover:bg-gray-900 rounded-lg transition-colors border"
-                    title="Copy address"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-gray-500" />
-                    )}
-                  </button>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="p-2 hover:bg-accent/50 rounded-lg transition-all border border-border ring-1 ring-transparent hover:ring-primary/30"
+                      title="Copy address"
+                    >
+                      {copied ? (
+                        <Check className="w-4 h-4 text-primary" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                      )}
+                    </button>
 
-                  <a
-                    href={getExplorerAddressUrl(patent.ownerAddress)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 hover:bg-white dark:hover:bg-gray-900 rounded-lg transition-colors border"
-                    title="View on block explorer"
-                  >
-                    <ExternalLink className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </a>
+                    <a
+                      href={getExplorerAddressUrl(patent.ownerAddress)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 hover:bg-accent/50 rounded-lg transition-all border border-border ring-1 ring-transparent hover:ring-primary/30"
+                      title="View on block explorer"
+                    >
+                      <ExternalLink className="w-4 h-4 text-primary" />
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </CardHeader>
 
           {/* Content Section */}
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-8 space-y-8">
             {/* Tags */}
             {patent.tags.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                   Research Areas
+                  <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {patent.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="px-3 py-1">
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="px-3 py-1 bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 transition-colors"
+                    >
                       {tag}
                     </Badge>
                   ))}
@@ -240,20 +255,24 @@ export default function PatentPage() {
 
             {/* Description */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                 Description
+                <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
               </h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed">
                 {patent.description}
               </p>
             </div>
 
             {/* PDF Viewer */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                 Patent Document
+                <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
               </h3>
-              <PDFViewer pdfUrl={patent.pdfUrl} />
+              <div className="border border-border rounded-lg overflow-hidden bg-muted/20">
+                <PDFViewer pdfUrl={patent.pdfUrl} />
+              </div>
             </div>
 
             {/* Buy Action */}
